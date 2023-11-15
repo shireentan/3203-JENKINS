@@ -1,34 +1,49 @@
 pipeline {
-	agent none
+	agent any
 	stages {
-		stage('Integration UI Test') {
-			parallel {
-				stage('Deploy') {
-					agent any
-					steps {
-						sh './jenkins/scripts/deploy.sh'
-						input message: 'Finished using the web site? (Click "Proceed" to continue)'
-						sh './jenkins/scripts/kill.sh'
-					}
-				}
-				stage('Headless Browser Test') {
-					agent {
-						docker {
-							image 'maven:3-alpine' 
-							args '-v /root/.m2:/root/.m2' 
-						}
-					}
-					steps {
-						sh 'mvn -B -DskipTests clean package'
-						sh 'mvn test'
-					}
-					post {
-						always {
-							junit 'target/surefire-reports/*.xml'
-						}
-					}
-				}
+		stage('Checkout SCM') {
+			steps {
+				git '/home/Documents/GitHub/JenkinsDependencyCheckTest'
 			}
 		}
+
+        stage('OWASP Dependency-Check Vulnerabilities') {
+            steps {
+                dependencyCheck additionalArguments: ''' 
+                            -o './'
+                            -s './'
+                            -f 'ALL' 
+                            --prettyPrint''', odcInstallation: 'OWASP Dependency-Check Vulnerabilities'
+                
+                dependencyCheckPublisher pattern: 'dependency-check-report.xml'
+            }
+        }
+
+        stage('Integration Testing') {
+            steps {
+                script {
+                    try {
+						sh 'npm install'
+                        sh 'npm test'
+                    } catch (Exception e) {
+                        error("Integration tests failed: ${e.message}")
+                    }
+                }
+            }
+        }
+
+		stage('UI Testing') {
+            steps {
+                script {
+                    try {
+						sh 'npm install'
+                        sh 'npm test'
+                    } catch (Exception e) {
+                        error("UI tests failed: ${e.message}")
+                    }
+                }
+            }
+        }
+
 	}
 }
