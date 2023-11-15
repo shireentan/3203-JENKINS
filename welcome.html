@@ -1,0 +1,32 @@
+<!-- public/welcome.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+        form {
+            display: inline-block;
+            text-align: left;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Welcome!</h2>
+    <p>Password entered: <strong><%= password %></strong></p>
+    <br>
+    <form action="/" method="get">
+        <button type="submit">Logout</button>
+    </form>
+</body>
+</html>

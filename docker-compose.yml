@@ -1,0 +1,52 @@
+version: '3'
+
+services:
+  jenkins:
+    container_name: jenkins
+    build: ./jenkins
+    ports:
+      - '8080:8080'
+      - '50000:50000'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./jenkins_home:/var/jenkins_home
+    networks:
+      - my_network
+
+  webapp:
+    container_name: webapp
+    build: ./webapp
+    ports:
+      - "80:80"
+    depends_on:
+      - jenkins
+    networks:
+      - my_network
+
+  nginxwebsvr:
+    image: nginx:alpine
+    container_name: nginxwebsvr
+    ports:
+      - "80:80"
+    networks:
+      - my_network
+
+  git-server:
+    build:
+      dockerfile: gitserver.Dockerfile
+      context: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./repos:/var/www/git
+    environment:
+      - REPO_ROOT=/git-data
+      - USER_NAME=TanShireen
+      - USER_EMAIL=2102432@sit.singaporetech.edu.sg
+    restart: always
+    networks:
+      - my_network
+
+networks:
+  my_network:
+    driver: bridge
